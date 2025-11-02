@@ -169,13 +169,13 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="space-y-4"
         >
-          <h2 className={`text-xl font-semibold ${
+          <h2 className={`text-xl font-semibold text-2xl ${
             isDark ? 'text-gray-200' : 'text-gray-800'
           }`}>
-            جاري التحضير...
+             ...جاري التحضير
           </h2>
-          
-          <p className={`text-sm ${
+
+          <p className={`text-sm text-2xl ${
             isDark ? 'text-gray-400' : 'text-gray-600'
           }`}>
             إعداد تجربة مميزة لك
@@ -208,7 +208,7 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
           transition={{ delay: 1, duration: 0.5 }}
           className="flex justify-center items-center space-x-2 mt-6"
         >
-          {[0, 1, 2].map((i) => (
+          {[0, 1, 2, 3].map((i) => (
             <motion.div
               key={i}
               className={`w-2 h-2 rounded-full ${
