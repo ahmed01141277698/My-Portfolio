@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>لوحة المشاريع</title>
+    <style>
+      :root {
+        --bg: #0b1030;
+        --panel: #131a45;
+        --panel-2: #1a2254;
+        --line: rgba(255, 255, 255, 0.16);
+        --fg: #f4f6ff;
+        --muted: #b3bcd9;
+        --brand: #ffd23f;
+        --brand-ink: #171200;
+        --danger: #ff8a8a;
+        --ok: #86efac;
+        font-family: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.6; }
+      a { color: #9db9ff; }
+      :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+      header.top {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+        padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--panel);
+      }
+      header.top h1 { margin: 0; font-size: 1.25rem; }
+      header.top p { margin: 0; color: var(--muted); font-size: 0.875rem; }
+      main { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 24px; max-width: 1280px; margin: 0 auto; }
+      @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } }
+      section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+      h2 { margin: 0 0 14px; font-size: 1.05rem; }
+      label.f { display: block; font-weight: 600; margin: 0 0 6px; font-size: 0.9rem; }
+      input[type="text"], input[type="url"], textarea, select {
+        width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
+        background: var(--bg); color: var(--fg); font: inherit;
+      }
+      textarea { resize: vertical; min-height: 84px; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+      .field { margin-bottom: 16px; }
+      .hint { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+      button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); padding: 8px 14px; }
+      button:hover { border-color: var(--fg); }
+      button.primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); font-weight: 700; }
+      button.danger { color: var(--danger); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      ul.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+      ul.list li { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); }
+      ul.list li.active { border-color: var(--brand); }
+      .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .row.between { justify-content: space-between; }
+      .muted { color: var(--muted); font-size: 0.85rem; }
+      .dropzone {
+        border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; background: var(--bg);
+        cursor: pointer; color: var(--muted);
+      }
+      .dropzone.over { border-color: var(--brand); color: var(--fg); }
+      .media-list { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
+      .media-item { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--bg); }
+      .media-item .thumb { width: 84px; height: 56px; border-radius: 6px; background: var(--panel-2); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+      .media-item .thumb img, .media-item .thumb video { width: 100%; height: 100%; object-fit: cover; }
+      .media-item input { padding: 6px 8px; font-size: 0.85rem; }
+      .tag { display: inline-block; font-size: 0.72rem; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
+      .progress { height: 6px; background: var(--panel-2); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+      .progress > i { display: block; height: 100%; background: var(--brand); width: 0; }
+      #toast { position: fixed; inset-inline-start: 24px; bottom: 24px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; max-width: min(92vw, 420px); display: none; }
+      #toast.show { display: block; }
+      #toast.ok { border-color: var(--ok); }
+      #toast.err { border-color: var(--danger); }
+      .check { display: flex; align-items: center; gap: 8px; }
+      .check input { width: 18px; height: 18px; }
+      code { direction: ltr; unicode-bidi: embed; background: var(--bg); padding: 1px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>لوحة المشاريع الجديدة</h1>
+        <p>بتشتغل على جهازك بس. المشاريع بتتحفظ في <code>src/data/newProjects.json</code> والملفات في <code>public/uploads</code>.</p>
+      </div>
+      <a id="site-link" href="./" target="_blank" rel="noopener">فتح الموقع ↗</a>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="list-title">
+        <div class="row between" style="margin-bottom: 14px">
+          <h2 id="list-title" style="margin: 0">مشاريعك الجديدة</h2>
+          <button type="button" id="btn-new" class="primary">+ مشروع جديد</button>
+        </div>
+        <ul class="list" id="project-list"></ul>
+        <p class="muted" id="empty-note" hidden>لسه مفيش مشاريع جديدة. اضغط "مشروع جديد" وابدأ.</p>
+      </section>
+
+      <section class="card" aria-labelledby="form-title">
+        <h2 id="form-title">مشروع جديد</h2>
+        <form id="form" novalidate>
+          <div class="grid2">
+            <div class="field">
+              <label class="f" for="titleAr">اسم المشروع (عربي)</label>
+              <input type="text" id="titleAr" />
+            </div>
+            <div class="field">
+              <label class="f" for="titleEn">Project name (English)</label>
+              <input type="text" id="titleEn" dir="ltr" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label class="f" for="descAr">الوصف (عربي)</label>
+              <textarea id="descAr"></textarea>
+            </div>
+            <div class="field">
+              <label class="f" for="descEn">Description (English)</label>
+              <textarea id="descEn" dir="ltr"></textarea>
+            </div>
+          </div>
+          <p class="hint" style="margin-top: -8px; margin-bottom: 16px">لو كتبت لغة واحدة بس، الموقع هيعرضها في اللغتين.</p>
+
+          <div class="grid2">
+            <div class="field">
+              <label class="f" for="category">التصنيف</label>
+              <select id="category">
+                <option value="web">مواقع الويب</option>
+                <option value="mobile">تطبيقات الجوال</option>
+                <option value="other">أخرى (بتظهر في "جميع المشاريع" بس)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="f" for="tech">التقنيات المستخدمة</label>
+              <input type="text" id="tech" dir="ltr" placeholder="React, Node.js, MongoDB" />
+              <p class="hint">افصل بينهم بفاصلة.</p>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label class="f" for="demoUrl">رابط المشروع (اختياري)</label>
+              <input type="url" id="demoUrl" dir="ltr" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label class="f" for="codeUrl">رابط الكود المصدري (اختياري)</label>
+              <input type="url" id="codeUrl" dir="ltr" placeholder="https://github.com/..." />
+            </div>
+          </div>
+
+          <div class="field check">
+            <input type="checkbox" id="featured" />
+            <label for="featured" style="font-weight: 600">مشروع مميز</label>
+          </div>
+
+          <fieldset style="border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 0 0 20px">
+            <legend style="padding: 0 8px; font-weight: 700">الصور والفيديوهات والروابط</legend>
+
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="ارفع صور أو فيديوهات">
+              اسحب الصور أو الفيديوهات هنا، أو اضغط للاختيار
+              <div class="muted" style="margin-top: 4px">jpg · png · webp · gif · avif · mp4 · webm · mov — حتى 95MB للملف</div>
+            </div>
+            <input type="file" id="file" accept="image/*,video/*" multiple hidden />
+
+            <div class="field" style="margin: 16px 0 0">
+              <label class="f" for="link">أو الصق رابط مباشر</label>
+              <div class="row">
+                <input type="url" id="link" dir="ltr" style="flex: 1; min-width: 200px" placeholder="رابط صورة / فيديو mp4 / يوتيوب / فيميو / أي رابط" />
+                <button type="button" id="btn-add-link">إضافة الرابط</button>
+              </div>
+              <p class="hint">يوتيوب وفيميو بيتشغلوا جوا الموقع، وروابط الصور والفيديو المباشرة بتتعرض، وأي رابط تاني بيظهر كزر "فتح الرابط".</p>
+            </div>
+
+            <ul class="media-list" id="media-list"></ul>
+          </fieldset>
+
+          <div class="row">
+            <button type="submit" class="primary" id="btn-save">حفظ المشروع</button>
+            <button type="button" id="btn-reset">إلغاء</button>
+            <span class="muted" id="status"></span>
+          </div>
+        </form>
+
+        <p class="hint" style="margin-top: 20px">
+          بعد الحفظ الموقع بيتحدّث فورًا هنا. عشان تنشره: <code>git add . &amp;&amp; git commit -m "new project" &amp;&amp; git push</code> وبعدين الـ deploy المعتاد بتاعك.
+        </p>
+      </section>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      (() => {
+        const siteBase = location.pathname.replace(/__admin\/?$/, '');
+        const API = siteBase + '__api/';
+        const $ = (id) => document.getElementById(id);
+
+        const IMAGE_RE = /\.(png|jpe?g|webp|gif|avif)(\?.*)?$/i;
+        const VIDEO_RE = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i;
+        const EMBED_RE = /(youtu\.be\/|youtube\.com\/(watch|shorts|embed|live)|vimeo\.com\/)/i;
+        const TYPE_LABEL = { image: 'صورة', video: 'فيديو', embed: 'فيديو مدمج', link: 'رابط' };
+        const TYPE_ICON = { image: '🖼️', video: '🎬', embed: '▶', link: '🔗' };
+
+        const detectType = (src) => (EMBED_RE.test(src) ? 'embed' : VIDEO_RE.test(src) ? 'video' : IMAGE_RE.test(src) ? 'image' : 'link');
+        const isUpload = (src) => /^uploads\//.test(src);
+        const fileUrl = (src) => (isUpload(src) ? siteBase + src : src);
+
+        let projects = [];
+        let editingId = null;
+        let media = [];
+        const sessionUploads = new Set(); // uploaded in this form, not saved yet
+        let pending = 0; // uploads in flight
+
+        $('site-link').href = siteBase;
+
+        function toast(msg, kind) {
+          const t = $('toast');
+          t.textContent = msg;
+          t.className = 'show ' + (kind || '');
+          clearTimeout(toast._t);
+          toast._t = setTimeout(() => (t.className = ''), 4500);
+        }
+
+        function el(tag, props, ...kids) {
+          const n = document.createElement(tag);
+          for (const [k, v] of Object.entries(props || {})) {
+            if (k === 'class') n.className = v;
+            else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+            else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v);
+          }
+          for (const kid of kids.flat()) if (kid != null) n.append(kid.nodeType ? kid : document.createTextNode(kid));
+          return n;
+        }
+
+        async function api(path, opts = {}) {
+          const res = await fetch(API + path, {
+            ...opts,
+            headers: { 'x-dashboard': '1', ...(opts.headers || {}) },
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'حصل خطأ');
+          return data;
+        }
+
+        /* ---------- project list ---------- */
+        function renderList() {
+          const ul = $('project-list');
+          ul.replaceChildren();
+          $('empty-note').hidden = projects.length > 0;
+          const sorted = projects.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+          for (const p of sorted) {
+            const name = p.title.ar || p.title.en || '(بدون اسم)';
+            ul.append(
+              el(
+                'li',
+                { class: p.id === editingId ? 'active' : '' },
+                el('div', { style: 'font-weight:700' }, name),
+                el('div', { class: 'muted' }, `${p.media.length} ملف · `, el('span', { class: 'tag' }, p.category), p.featured ? ' ⭐' : ''),
+                el(
+                  'div',
+                  { class: 'row', style: 'margin-top:8px' },
+                  el('button', { type: 'button', onclick: () => startEdit(p.id) }, 'تعديل'),
+                  el('button', { type: 'button', class: 'danger', onclick: () => remove(p.id) }, 'حذف'),
+                ),
+              ),
+            );
+          }
+        }
+
+        /* ---------- media list ---------- */
+        function renderMedia() {
+          const ul = $('media-list');
+          ul.replaceChildren();
+          media.forEach((m, i) => {
+            let thumb;
+            const url = fileUrl(m.src);
+            if (m.type === 'image') thumb = el('img', { src: url, alt: '' });
+            else if (m.type === 'video') thumb = el('video', { src: url + '#t=0.1', muted: true, preload: 'metadata' });
+            else thumb = document.createTextNode(TYPE_ICON[m.type]);
+
+            const label = el('input', { type: 'text', value: m.label || '', placeholder: 'وصف قصير (اختياري)', 'aria-label': 'وصف الملف' });
+            label.addEventListener('input', () => (m.label = label.value));
+
+            const info = el(
+              'div',
+              null,
+              el('div', { class: 'row' }, el('span', { class: 'tag' }, TYPE_LABEL[m.type]), el('span', { class: 'muted', dir: 'ltr', style: 'overflow-wrap:anywhere' }, m.src)),
+              m.progress != null ? el('div', { class: 'progress' }, el('i', { style: `width:${m.progress}%` })) : label,
+            );
+
+            const actions = el(
+              'div',
+              { class: 'row' },
+              el('button', { type: 'button', 'aria-label': 'تحريك لأعلى', disabled: i === 0, onclick: () => move(i, -1) }, '↑'),
+              el('button', { type: 'button', 'aria-label': 'تحريك لأسفل', disabled: i === media.length - 1, onclick: () => move(i, 1) }, '↓'),
+              el('button', { type: 'button', class: 'danger', onclick: () => removeMedia(i) }, 'حذف'),
+            );
+
+            ul.append(el('li', { class: 'media-item' }, el('div', { class: 'thumb' }, thumb), info, actions));
+          });
+        }
+
+        function move(i, d) {
+          const j = i + d;
+          if (j < 0 || j >= media.length) return;
+          [media[i], media[j]] = [media[j], media[i]];
+          renderMedia();
+        }
+
+        async function removeMedia(i) {
+          const [m] = media.splice(i, 1);
+          renderMedia();
+          if (m && sessionUploads.has(m.src)) {
+            sessionUploads.delete(m.src);
+            api('upload?src=' + encodeURIComponent(m.src), { method: 'DELETE' }).catch(() => {});
+          }
+        }
+
+        /* ---------- adding media ---------- */
+        function addLink() {
+          const v = $('link').value.trim();
+          if (!/^https?:\/\//i.test(v)) return toast('الرابط لازم يبدأ بـ https://', 'err');
+          media.push({ type: detectType(v), src: v });
+          $('link').value = '';
+          renderMedia();
+        }
+
+        function upload(file) {
+          const item = { type: detectType(file.name), src: file.name, progress: 0 };
+          media.push(item);
+          pending++;
+          renderMedia();
+          return new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', API + 'upload?name=' + encodeURIComponent(file.name));
+            xhr.setRequestHeader('x-dashboard', '1');
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                item.progress = Math.round((e.loaded / e.total) * 100);
+                renderMedia();
+              }
+            };
+            xhr.onload = () => {
+              pending--;
+              let data = {};
+              try { data = JSON.parse(xhr.responseText); } catch {}
+              if (xhr.status === 200 && data.src) {
+                item.src = data.src;
+                delete item.progress;
+                sessionUploads.add(data.src);
+              } else {
+                media.splice(media.indexOf(item), 1);
+                toast(`${file.name}: ${data.error || 'فشل الرفع'}`, 'err');
+              }
+              renderMedia();
+              resolve();
+            };
+            xhr.onerror = () => {
+              pending--;
+              media.splice(media.indexOf(item), 1);
+              renderMedia();
+              toast(`${file.name}: فشل الاتصال بالسيرفر`, 'err');
+              resolve();
+            };
+            xhr.send(file);
+          });
+        }
+
+        async function handleFiles(files) {
+          for (const f of files) await upload(f);
+        }
+
+        const dz = $('dropzone');
+        dz.addEventListener('click', () => $('file').click());
+        dz.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), $('file').click()));
+        dz.addEventListener('dragover', (e) => (e.preventDefault(), dz.classList.add('over')));
+        dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+        dz.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dz.classList.remove('over');
+          handleFiles([...e.dataTransfer.files]);
+        });
+        $('file').addEventListener('change', (e) => {
+          handleFiles([...e.target.files]);
+          e.target.value = '';
+        });
+        $('btn-add-link').addEventListener('click', addLink);
+        $('link').addEventListener('keydown', (e) => e.key === 'Enter' && (e.preventDefault(), addLink()));
+
+        /* ---------- form ---------- */
+        function fillForm(p) {
+          $('titleAr').value = p?.title.ar || '';
+          $('titleEn').value = p?.title.en || '';
+          $('descAr').value = p?.description.ar || '';
+          $('descEn').value = p?.description.en || '';
+          $('category').value = p?.category || 'web';
+          $('tech').value = (p?.technologies || []).join(', ');
+          $('demoUrl').value = p?.demoUrl || '';
+          $('codeUrl').value = p?.codeUrl || '';
+          $('featured').checked = !!p?.featured;
+          media = (p?.media || []).map((m) => ({ ...m }));
+          $('form-title').textContent = p ? 'تعديل المشروع' : 'مشروع جديد';
+          $('btn-save').textContent = p ? 'حفظ التعديلات' : 'حفظ المشروع';
+          renderMedia();
+          renderList();
+        }
+
+        async function discardSessionUploads() {
+          const stale = [...sessionUploads];
+          sessionUploads.clear();
+          await Promise.all(stale.map((s) => api('upload?src=' + encodeURIComponent(s), { method: 'DELETE' }).catch(() => {})));
+        }
+
+        async function resetForm() {
+          await discardSessionUploads();
+          editingId = null;
+          fillForm(null);
+        }
+
+        function startEdit(id) {
+          discardSessionUploads();
+          editingId = id;
+          fillForm(projects.find((p) => p.id === id));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function persist(next) {
+          projects = await api('projects', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(next),
+          });
+        }
+
+        async function remove(id) {
+          const p = projects.find((x) => x.id === id);
+          if (!p || !confirm(`حذف "${p.title.ar || p.title.en}"؟ الملفات المرفوعة ليه هتتمسح كمان.`)) return;
+          try {
+            await persist(projects.filter((x) => x.id !== id));
+            if (editingId === id) { editingId = null; fillForm(null); }
+            renderList();
+            toast('تم الحذف', 'ok');
+          } catch (e) {
+            toast(e.message, 'err');
+          }
+        }
+
+        $('form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const titleAr = $('titleAr').value.trim();
+          const titleEn = $('titleEn').value.trim();
+          if (!titleAr && !titleEn) {
+            $('titleAr').focus();
+            return toast('اكتب اسم المشروع بلغة واحدة على الأقل', 'err');
+          }
+          if (pending > 0) return toast('استنى لحد ما الرفع يخلص', 'err');
+
+          const existing = projects.find((p) => p.id === editingId);
+          const record = {
+            id: existing?.id,
+            createdAt: existing?.createdAt || new Date().toISOString(),
+            title: { ar: titleAr, en: titleEn },
+            description: { ar: $('descAr').value.trim(), en: $('descEn').value.trim() },
+            category: $('category').value,
+            featured: $('featured').checked,
+            technologies: $('tech').value.split(/[,،]/).map((s) => s.trim()).filter(Boolean),
+            demoUrl: $('demoUrl').value.trim(),
+            codeUrl: $('codeUrl').value.trim(),
+            media: media.map(({ type, src, label }) => (label ? { type, src, label } : { type, src })),
+          };
+
+          $('btn-save').disabled = true;
+          try {
+            const next = existing ? projects.map((p) => (p.id === existing.id ? record : p)) : [...projects, record];
+            await persist(next);
+            sessionUploads.clear();
+            editingId = null;
+            fillForm(null);
+            toast('تم الحفظ. الموقع اتحدّث.', 'ok');
+          } catch (err) {
+            toast(err.message, 'err');
+          } finally {
+            $('btn-save').disabled = false;
+          }
+        });
+
+        $('btn-reset').addEventListener('click', resetForm);
+        $('btn-new').addEventListener('click', resetForm);
+
+        api('projects')
+          .then((data) => { projects = data; renderList(); })
+          .catch((e) => toast(e.message, 'err'));
+        fillForm(null);
+      })();
+    </script>
+  </body>
+</html>

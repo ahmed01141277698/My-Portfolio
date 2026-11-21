@@ -1,243 +1,81 @@
-import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
-import { useTheme } from './ThemeProvider';
-import { Bold } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLanguage } from '../i18n/LanguageProvider';
 
 export function HeroSection() {
-  const [text, setText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
-  const fullText = 'أحمد بدوي';
-  const { theme } = useTheme();
-  
+  const { t } = useLanguage();
+  const full = t.hero.name;
+  const [count, setCount] = useState(0);
+
   useEffect(() => {
-    if (isTyping) {
-      const timer = setTimeout(() => {
-        setText(fullText.slice(0, text.length + 1));
-        if (text.length === fullText.length) {
-          setIsTyping(false);
-        }
-      }, 150);
-      return () => clearTimeout(timer);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCount(full.length);
+      return;
     }
-  }, [text, isTyping]);
-
-  const scrollToProjects = () => {
-    const element = document.getElementById('projects');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const isDark = theme === 'dark';
+    setCount(0);
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setCount(i);
+      if (i >= full.length) clearInterval(id);
+    }, 110);
+    return () => clearInterval(id);
+  }, [full]);
 
   return (
-    <section id="home" className="min-h-screen font-semibold flex items-center justify-center relative overflow-hidden ">
-      <div className="max-w-7xl   mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 ">
-        {/* Floating 3D Elements */}
-        <motion.div
-          className={`absolute top-20 left-20 w-20 h-20 rounded-lg opacity-20 ${
-            isDark 
-              ? 'bg-gradient-to-br from-blue-400 to-purple-600' 
-              : 'bg-gradient-to-br from-blue-300 to-purple-500'
-          }`}
-          animate={{
-            y: [0, -20, 0],
-            rotateX: [0, 360],
-            rotateY: [0, 180],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        <motion.div
-          className={`absolute top-40 right-32 w-16 h-16 rounded-full opacity-20 ${
-            isDark 
-              ? 'bg-gradient-to-br from-pink-400 to-red-600' 
-              : 'bg-gradient-to-br from-pink-300 to-red-500'
-          }`}
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -15, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
+    <section id="home" className="relative flex min-h-screen items-center pb-16 pt-28">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="rise text-2xl font-semibold text-muted sm:text-3xl" style={{ ['--d' as string]: '100ms' }}>
+            {t.hero.greeting}
+          </p>
 
-        <motion.div
-          className={`absolute bottom-32 left-1/4 w-12 h-12 rounded-md opacity-20 ${
-            isDark 
-              ? 'bg-gradient-to-br from-green-400 to-blue-600' 
-              : 'bg-gradient-to-br from-green-300 to-blue-500'
-          }`}
-          animate={{
-            rotate: [0, 360],
-            y: [0, -25, 0],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-        />
-
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="space-y-8 max-w-5xl mx-auto"
-        >
-          {/* Welcome Text */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className={`text-lg md:text-x1  tracking-wider ${
-              isDark ? 'text-blue-400' : 'text-blue-600 '
-              }`}
-            style={{margin:60, fontSize:28 }}
+          {/* The full name is rendered invisibly so the layout never shifts while the typed copy fills in. */}
+          <h1
+            aria-label={full}
+            className="rise relative mt-2 text-5xl font-bold leading-[1.15] text-fg sm:text-7xl lg:text-8xl"
+            style={{ ['--d' as string]: '250ms' }}
           >
-            <h1>   مرحباً ، أنا</h1>
-         
-          </motion.p>
-
-          {/* Name with 3D Effect */}
-          <div className="relative">
-            <motion.h1
-              className={`text-5xl md:text-7xl lg:text-8xl font-bold relative z-10 ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}
-              style={{
-                textShadow: isDark 
-                  ? '0 0 20px rgba(59, 130, 246, 0.5)' 
-                  : '0 0 20px rgba(59, 130, 246, 0.3)',
-              }}
-            >
-              {text}
-              <motion.span
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-                className={isDark ? 'text-blue-400' : 'text-blue-600'}
-              >
-                {isTyping ? '|' : ''}
-              </motion.span>
-            </motion.h1>
-            
-            {/* 3D Shadow Effect */}
-            <motion.h1
-              className={`absolute top-2 left-2 text-5xl md:text-7xl lg:text-8xl font-bold -z-10 ${
-                isDark ? 'text-blue-900/30' : 'text-blue-200/50'
-              }`}
-              animate={{
-                x: [2, 6, 2],
-                y: [2, 6, 2],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              {text}
-            </motion.h1>
-          </div>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className={`text-2xl md:text-3xl max-w-4xl mx-auto leading-relaxed ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}
-          >
-            مطور ويب شغوف بتطوير حلول رقمية إبداعية
-            <br />
-            <span className={isDark ? 'text-purple-400' : 'text-purple-600'}>
-              تحول الأفكار إلى واقع رقمي
+            <span className="invisible">{full}</span>
+            <span aria-hidden="true" className="absolute inset-0">
+              {full.slice(0, count)}
+              {count < full.length && (
+                <span className="text-brand" style={{ animation: 'caret 1s steps(1) infinite' }}>
+                  |
+                </span>
+              )}
             </span>
-          </motion.p>
+          </h1>
 
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.8 }}
-            className={`text-lg max-w-3xl mx-auto leading-relaxed ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}
+          <p
+            className="rise mt-8 max-w-2xl text-2xl font-semibold leading-snug text-fg sm:text-3xl"
+            style={{ ['--d' as string]: '450ms' }}
           >
-            <h1> متخصص في تطوير مواقع ويب وتطبيقات متقدمة باستخدام أحدث التقنيات
-            أركز على بناء حلول تقنية تساعد الشركات على النمو وحل مشكلاتها الحقيقية</h1>
-          </motion.p>
+            {t.hero.subtitle}
+            <span className="block text-muted">{t.hero.subtitleAccent}</span>
+          </p>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12"
+          <p
+            className="rise mt-6 max-w-[62ch] text-lg leading-8 text-muted"
+            style={{ ['--d' as string]: '600ms' }}
           >
-            <motion.button
-              onClick={scrollToProjects}
-              className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white font-semibold overflow-hidden"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
+            {t.hero.description}
+          </p>
+
+          <div className="rise mt-10 flex flex-wrap gap-4" style={{ ['--d' as string]: '750ms' }}>
+            <a
+              href="#projects"
+              className="rounded-full bg-brand px-8 py-4 font-semibold text-brand-ink shadow-lg transition hover:-translate-y-0.5 hover:brightness-95"
             >
-              <span className="relative z-10">استعرض أعمالي</span>
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                initial={false}
-              />
-            </motion.button>
-
-            <motion.a
+              {t.hero.ctaProjects}
+            </a>
+            <a
               href="#contact"
-              className={`group px-8 py-4 border-2 rounded-full font-semibold transition-all duration-300 ${
-                isDark 
-                  ? 'border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white' 
-                  : 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
-              }`}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
+              className="rounded-full border-2 border-fg/70 px-8 py-4 font-semibold text-fg transition hover:-translate-y-0.5 hover:bg-fg hover:text-[var(--sky-1)]"
             >
-              تواصل معي
-            </motion.a>
-          </motion.div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 3, duration: 1 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className={`w-6 h-10 border-2 rounded-full flex justify-center ${
-              isDark ? 'border-gray-400' : 'border-gray-600'
-            }`}
-          >
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className={`w-1 h-3 rounded-full mt-2 ${
-                isDark ? 'bg-blue-400' : 'bg-blue-600'
-              }`}
-            />
-          </motion.div>
-        </motion.div>
+              {t.hero.ctaContact}
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );

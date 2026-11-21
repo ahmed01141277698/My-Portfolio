@@ -1,0 +1,34 @@
+[
+  {
+    "id": "f61b4b65ae7d",
+    "createdAt": "2026-11-21T09:50:41.089Z",
+    "title": {
+      "ar": "عقاركس",
+      "en": "AQARX"
+    },
+    "description": {
+      "ar": "عقاركس (Aqarx) هي منصة إلكترونية متخصصة في التسويق العقاري، تهدف إلى تسهيل عمليات بيع وشراء وتأجير العقارات من خلال توفير مساحة رقمية تجمع بين المالكين والمشترين والمستأجرين والمسوقين العقاريين في مكان واحد.",
+      "en": "Aqarx is a digital real estate platform designed to simplify buying, selling, and renting properties by bringing property owners, buyers, tenants, real estate agents, and companies together in one place."
+    },
+    "category": "web",
+    "featured": false,
+    "technologies": [
+      "Reactjs",
+      "NodeJS",
+      "MongoDB",
+      "e.g. ."
+    ],
+    "demoUrl": "https://aqarxegypt2.vercel.app/",
+    "codeUrl": "",
+    "media": [
+      {
+        "type": "video",
+        "src": "uploads/aqarx-f9afc5ff.mp4"
+      },
+      {
+        "type": "image",
+        "src": "uploads/aqarx-header-logo-8628be9a.png"
+      }
+    ]
+  }
+]
