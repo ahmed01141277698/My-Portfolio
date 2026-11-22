@@ -15,9 +15,20 @@ export function isExternal(src: string) {
 }
 
 /** Turns "uploads/x.png" into a URL that works under the Vite base path. */
+// export function resolveSrc(src: string) {
+//   if (isExternal(src)) return src;
+//   return `${import.meta.env.BASE_URL}${src.replace(/^\/+/, '')}`;
+// }
+
 export function resolveSrc(src: string) {
   if (isExternal(src)) return src;
-  return `${import.meta.env.BASE_URL}${src.replace(/^\/+/, '')}`;
+
+  const base = import.meta.env.BASE_URL;
+
+  // لو المسار بالفعل يحتوي على Vite base path، لا تضفه مرة أخرى
+  if (src.startsWith(base)) return src;
+
+  return `${base}${src.replace(/^\/+/, '')}`;
 }
 
 /** Only http(s) and site-relative links are allowed in hrefs. */

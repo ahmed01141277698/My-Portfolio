@@ -11,15 +11,20 @@ function findImage(...keywords: string[]): string | undefined {
   return entry?.[1];
 }
 
-const energy = findImage('energy', 'enargy', 'enrgy');
+const energy = findImage('enargy');
 const design = findImage('design');
-const qiuz = findImage('qiuz', 'quiz', 'اختبار');
+const qiuz = findImage('صورة-الاختبارات-الالكترونية');
 import newProjectsRaw from './newProjects.json';
 import type { Lang } from '../i18n/translations';
 import type { MediaItem } from '../lib/media';
 
 export type Category = 'web' | 'mobile' | 'other';
-
+console.log('Images Check:', {
+  energy,
+  design,
+  quiz: qiuz,
+  allImages: Object.keys(localImages),
+});
 export interface Project {
   id: string;
   title: string;
